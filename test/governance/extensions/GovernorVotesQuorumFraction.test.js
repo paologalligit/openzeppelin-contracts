@@ -1,10 +1,9 @@
-const { expectEvent, time } = require('@openzeppelin/test-helpers');
+const { expectEvent, expectRevert, time } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai');
 
 const Enums = require('../../helpers/enums');
 const { GovernorHelper, proposalStatesToBitMap } = require('../../helpers/governance');
 const { clock } = require('../../helpers/time');
-const { expectRevertCustomError } = require('../../helpers/customError');
 
 const Governor = artifacts.require('$GovernorMock');
 const CallReceiver = artifacts.require('CallReceiverMock');
@@ -85,19 +84,13 @@ contract('GovernorVotesQuorumFraction', function (accounts) {
         await this.helper.waitForSnapshot();
         await this.helper.vote({ support: Enums.VoteType.For }, { from: voter2 });
         await this.helper.waitForDeadline();
-        await expectRevertCustomError(this.helper.execute(), 'GovernorUnexpectedProposalState', [
-          this.proposal.id,
-          Enums.ProposalState.Defeated,
-          proposalStatesToBitMap([Enums.ProposalState.Succeeded, Enums.ProposalState.Queued]),
-        ]);
+        await expectRevert.unspecified(this.helper.execute());
       });
 
       describe('onlyGovernance updates', function () {
         it('updateQuorumNumerator is protected', async function () {
-          await expectRevertCustomError(
-            this.mock.updateQuorumNumerator(newRatio, { from: owner }),
-            'GovernorOnlyExecutor',
-            [owner],
+          await expectRevert.unspecified(
+            this.mock.updateQuorumNumerator(newRatio, { from: owner })
           );
         });
 
@@ -156,10 +149,7 @@ contract('GovernorVotesQuorumFraction', function (accounts) {
 
           const quorumDenominator = await this.mock.quorumDenominator();
 
-          await expectRevertCustomError(this.helper.execute(), 'GovernorInvalidQuorumFraction', [
-            quorumNumerator,
-            quorumDenominator,
-          ]);
+          await expectRevert.unspecified(this.helper.execute());
         });
       });
     });

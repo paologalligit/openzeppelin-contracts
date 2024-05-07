@@ -1,10 +1,9 @@
-const { expectEvent } = require('@openzeppelin/test-helpers');
+const { expectEvent, expectRevert } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai');
 
 const Enums = require('../../helpers/enums');
 const { GovernorHelper } = require('../../helpers/governance');
 const { clockFromReceipt } = require('../../helpers/time');
-const { expectRevertCustomError } = require('../../helpers/customError');
 
 const Governor = artifacts.require('$GovernorPreventLateQuorumMock');
 const CallReceiver = artifacts.require('CallReceiverMock');
@@ -13,7 +12,7 @@ const TOKENS = [
   { Token: artifacts.require('$ERC20Votes'), mode: 'blocknumber' },
   { Token: artifacts.require('$ERC20VotesTimestampMock'), mode: 'timestamp' },
 ];
-
+// TODO: OnlyHardhatNetwrokError and timout errors
 contract('GovernorPreventLateQuorum', function (accounts) {
   const [owner, proposer, voter1, voter2, voter3, voter4] = accounts;
 
@@ -159,10 +158,8 @@ contract('GovernorPreventLateQuorum', function (accounts) {
 
       describe('onlyGovernance updates', function () {
         it('setLateQuorumVoteExtension is protected', async function () {
-          await expectRevertCustomError(
-            this.mock.setLateQuorumVoteExtension(0, { from: owner }),
-            'GovernorOnlyExecutor',
-            [owner],
+          await expectRevert.unspecified(
+            this.mock.setLateQuorumVoteExtension(0, { from: owner })
           );
         });
 

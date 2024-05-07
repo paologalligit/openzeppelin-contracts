@@ -11,7 +11,7 @@ const TOKENS = [
   { Token: artifacts.require('$ERC721Votes'), mode: 'blocknumber' },
   { Token: artifacts.require('$ERC721VotesTimestampMock'), mode: 'timestamp' },
 ];
-
+// TODO: OnlyHardhatNetwrokError
 contract('GovernorERC721', function (accounts) {
   const [owner, voter1, voter2, voter3, voter4] = accounts;
 

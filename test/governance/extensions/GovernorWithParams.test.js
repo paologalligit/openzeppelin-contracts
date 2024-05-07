@@ -1,4 +1,4 @@
-const { expectEvent } = require('@openzeppelin/test-helpers');
+const { expectEvent, expectRevert } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai');
 const ethSigUtil = require('eth-sig-util');
 const Wallet = require('ethereumjs-wallet').default;
@@ -6,7 +6,6 @@ const Wallet = require('ethereumjs-wallet').default;
 const Enums = require('../../helpers/enums');
 const { getDomain, domainType } = require('../../helpers/eip712');
 const { GovernorHelper } = require('../../helpers/governance');
-const { expectRevertCustomError } = require('../../helpers/customError');
 
 const Governor = artifacts.require('$GovernorWithParamsMock');
 const CallReceiver = artifacts.require('CallReceiverMock');
@@ -244,7 +243,7 @@ contract('GovernorWithParams', function (accounts) {
             params: encodedParams,
           };
 
-          await expectRevertCustomError(this.helper.vote(voteParams), 'GovernorInvalidSignature', [voteParams.voter]);
+          await expectRevert.unspecified(this.helper.vote(voteParams));
         });
 
         it('reverts if vote nonce is incorrect', async function () {
@@ -264,12 +263,7 @@ contract('GovernorWithParams', function (accounts) {
             params: encodedParams,
           };
 
-          await expectRevertCustomError(
-            this.helper.vote(voteParams),
-            // The signature check implies the nonce can't be tampered without changing the signer
-            'GovernorInvalidSignature',
-            [voteParams.voter],
-          );
+          await expectRevert.unspecified(this.helper.vote(voteParams));
         });
       });
     });

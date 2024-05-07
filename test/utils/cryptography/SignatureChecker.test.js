@@ -8,7 +8,7 @@ const ERC1271MaliciousMock = artifacts.require('ERC1271MaliciousMock');
 
 const TEST_MESSAGE = web3.utils.sha3('OpenZeppelin');
 const WRONG_MESSAGE = web3.utils.sha3('Nope');
-
+// TODO: this is throwing error in before function because eth_sign is not implemented
 contract('SignatureChecker (ERC1271)', function (accounts) {
   const [signer, other] = accounts;
 

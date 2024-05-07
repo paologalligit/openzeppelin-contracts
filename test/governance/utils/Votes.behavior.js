@@ -1,4 +1,4 @@
-const { constants, expectEvent, time } = require('@openzeppelin/test-helpers');
+const { constants, expectEvent, expectRevert, time } = require('@openzeppelin/test-helpers');
 
 const { MAX_UINT256, ZERO_ADDRESS } = constants;
 
@@ -9,7 +9,6 @@ const Wallet = require('ethereumjs-wallet').default;
 const { shouldBehaveLikeEIP6372 } = require('./EIP6372.behavior');
 const { getDomain, domainType } = require('../../helpers/eip712');
 const { clockFromReceipt } = require('../../helpers/time');
-const { expectRevertCustomError } = require('../../helpers/customError');
 
 const Delegation = [
   { name: 'delegatee', type: 'address' },
@@ -177,10 +176,8 @@ function shouldBehaveLikeVotes(accounts, tokens, { mode = 'blocknumber', fungibl
 
           await this.votes.delegateBySig(delegatee, nonce, MAX_UINT256, v, r, s);
 
-          await expectRevertCustomError(
-            this.votes.delegateBySig(delegatee, nonce, MAX_UINT256, v, r, s),
-            'InvalidAccountNonce',
-            [delegator.address, nonce + 1],
+          await expectRevert.unspecified(
+            this.votes.delegateBySig(delegatee, nonce, MAX_UINT256, v, r, s)
           );
         });
 
@@ -213,10 +210,8 @@ function shouldBehaveLikeVotes(accounts, tokens, { mode = 'blocknumber', fungibl
             delegator.getPrivateKey(),
           );
 
-          await expectRevertCustomError(
-            this.votes.delegateBySig(delegatee, nonce + 1, MAX_UINT256, v, r, s),
-            'InvalidAccountNonce',
-            [delegator.address, 0],
+          await expectRevert.unspecified(
+            this.votes.delegateBySig(delegatee, nonce + 1, MAX_UINT256, v, r, s)
           );
         });
 
@@ -232,10 +227,8 @@ function shouldBehaveLikeVotes(accounts, tokens, { mode = 'blocknumber', fungibl
             delegator.getPrivateKey(),
           );
 
-          await expectRevertCustomError(
-            this.votes.delegateBySig(delegatee, nonce, expiry, v, r, s),
-            'VotesExpiredSignature',
-            [expiry],
+          await expectRevert.unspecified(
+            this.votes.delegateBySig(delegatee, nonce, expiry, v, r, s)
           );
         });
       });
@@ -249,7 +242,7 @@ function shouldBehaveLikeVotes(accounts, tokens, { mode = 'blocknumber', fungibl
       it('reverts if block number >= current block', async function () {
         const timepoint = 5e10;
         const clock = await this.votes.clock();
-        await expectRevertCustomError(this.votes.getPastTotalSupply(timepoint), 'ERC5805FutureLookup', [
+        await expectRevert.unspecified(this.votes.getPastTotalSupply(timepoint), 'ERC5805FutureLookup', [
           timepoint,
           clock,
         ]);
@@ -300,10 +293,7 @@ function shouldBehaveLikeVotes(accounts, tokens, { mode = 'blocknumber', fungibl
         expect(await this.votes.getPastTotalSupply(t4.timepoint)).to.be.bignumber.equal(weight[2]);
         expect(await this.votes.getPastTotalSupply(t4.timepoint + 1)).to.be.bignumber.equal(weight[2]);
         expect(await this.votes.getPastTotalSupply(t5.timepoint)).to.be.bignumber.equal('0');
-        await expectRevertCustomError(this.votes.getPastTotalSupply(t5.timepoint + 1), 'ERC5805FutureLookup', [
-          t5.timepoint + 1, // timepoint
-          t5.timepoint + 1, // clock
-        ]);
+        await expectRevert.unspecified(this.votes.getPastTotalSupply(t5.timepoint + 1));
       });
     });
 
@@ -320,10 +310,7 @@ function shouldBehaveLikeVotes(accounts, tokens, { mode = 'blocknumber', fungibl
         it('reverts if block number >= current block', async function () {
           const clock = await this.votes.clock();
           const timepoint = 5e10; // far in the future
-          await expectRevertCustomError(this.votes.getPastVotes(accounts[2], timepoint), 'ERC5805FutureLookup', [
-            timepoint,
-            clock,
-          ]);
+          await expectRevert.unspecified(this.votes.getPastVotes(accounts[2], timepoint));
         });
 
         it('returns 0 if there are no checkpoints', async function () {

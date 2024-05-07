@@ -3,6 +3,7 @@ const shouldBehaveLikeTransparentUpgradeableProxy = require('./TransparentUpgrad
 
 const TransparentUpgradeableProxy = artifacts.require('TransparentUpgradeableProxy');
 const ITransparentUpgradeableProxy = artifacts.require('ITransparentUpgradeableProxy');
+// TODO: OnlyHardhatNetworkError
 
 contract('TransparentUpgradeableProxy', function (accounts) {
   const [owner, ...otherAccounts] = accounts;

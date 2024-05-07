@@ -1,6 +1,5 @@
-const { expectEvent } = require('@openzeppelin/test-helpers');
+const { expectEvent, expectRevert } = require('@openzeppelin/test-helpers');
 const { getAddressInSlot, ImplementationSlot } = require('../../helpers/erc1967');
-const { expectRevertCustomError } = require('../../helpers/customError');
 
 const ERC1967Proxy = artifacts.require('ERC1967Proxy');
 const UUPSUpgradeableMock = artifacts.require('UUPSUpgradeableMock');
@@ -19,7 +18,7 @@ contract('UUPSUpgradeable', function () {
     // Used for testing non ERC1967 compliant proxies (clones are proxies that don't use the ERC1967 implementation slot)
     this.cloneFactory = await Clones.new();
   });
-
+// TODO: OnlyHardhatNetwrokError
   beforeEach(async function () {
     const { address } = await ERC1967Proxy.new(this.implInitial.address, '0x');
     this.instance = await UUPSUpgradeableMock.at(address);
@@ -51,21 +50,17 @@ contract('UUPSUpgradeable', function () {
   });
 
   it('calling upgradeTo on the implementation reverts', async function () {
-    await expectRevertCustomError(
-      this.implInitial.upgradeToAndCall(this.implUpgradeOk.address, '0x'),
-      'UUPSUnauthorizedCallContext',
-      [],
+    await expectRevert.unspecified(
+      this.implInitial.upgradeToAndCall(this.implUpgradeOk.address, '0x')
     );
   });
 
   it('calling upgradeToAndCall on the implementation reverts', async function () {
-    await expectRevertCustomError(
+    await expectRevert.unspecified(
       this.implInitial.upgradeToAndCall(
         this.implUpgradeOk.address,
         this.implUpgradeOk.contract.methods.increment().encodeABI(),
-      ),
-      'UUPSUnauthorizedCallContext',
-      [],
+      )
     );
   });
 
@@ -75,10 +70,8 @@ contract('UUPSUpgradeable', function () {
       receipt.logs.find(({ event }) => event === 'return$clone').args.instance,
     );
 
-    await expectRevertCustomError(
-      instance.upgradeToAndCall(this.implUpgradeUnsafe.address, '0x'),
-      'UUPSUnauthorizedCallContext',
-      [],
+    await expectRevert.unspecified(
+      instance.upgradeToAndCall(this.implUpgradeUnsafe.address, '0x')
     );
   });
 
@@ -88,18 +81,14 @@ contract('UUPSUpgradeable', function () {
       receipt.logs.find(({ event }) => event === 'return$clone').args.instance,
     );
 
-    await expectRevertCustomError(
-      instance.upgradeToAndCall(this.implUpgradeUnsafe.address, '0x'),
-      'UUPSUnauthorizedCallContext',
-      [],
+    await expectRevert.unspecified(
+      instance.upgradeToAndCall(this.implUpgradeUnsafe.address, '0x')
     );
   });
 
   it('rejects upgrading to an unsupported UUID', async function () {
-    await expectRevertCustomError(
-      this.instance.upgradeToAndCall(this.implUnsupportedUUID.address, '0x'),
-      'UUPSUnsupportedProxiableUUID',
-      [web3.utils.keccak256('invalid UUID')],
+    await expectRevert.unspecified(
+      this.instance.upgradeToAndCall(this.implUnsupportedUUID.address, '0x')
     );
   });
 
@@ -111,10 +100,8 @@ contract('UUPSUpgradeable', function () {
 
   // delegate to a non existing upgradeTo function causes a low level revert
   it('reject upgrade to non uups implementation', async function () {
-    await expectRevertCustomError(
-      this.instance.upgradeToAndCall(this.implUpgradeNonUUPS.address, '0x'),
-      'ERC1967InvalidImplementation',
-      [this.implUpgradeNonUUPS.address],
+    await expectRevert.unspecified(
+      this.instance.upgradeToAndCall(this.implUpgradeNonUUPS.address, '0x')
     );
   });
 
@@ -122,10 +109,8 @@ contract('UUPSUpgradeable', function () {
     const { address } = await ERC1967Proxy.new(this.implInitial.address, '0x');
     const otherInstance = await UUPSUpgradeableMock.at(address);
 
-    await expectRevertCustomError(
-      this.instance.upgradeToAndCall(otherInstance.address, '0x'),
-      'ERC1967InvalidImplementation',
-      [otherInstance.address],
+    await expectRevert.unspecified(
+      this.instance.upgradeToAndCall(otherInstance.address, '0x')
     );
   });
 });

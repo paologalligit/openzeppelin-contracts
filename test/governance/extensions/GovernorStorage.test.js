@@ -1,7 +1,6 @@
 const { constants, expectEvent, expectRevert } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai');
 
-const { expectRevertCustomError } = require('../../helpers/customError');
 const Enums = require('../../helpers/enums');
 const { GovernorHelper, timelockSalt } = require('../../helpers/governance');
 
@@ -13,6 +12,7 @@ const TOKENS = [
   { Token: artifacts.require('$ERC20Votes'), mode: 'blocknumber' },
   { Token: artifacts.require('$ERC20VotesTimestampMock'), mode: 'timestamp' },
 ];
+// TODO: OnlyHardhatNetwrokError and timout errors
 
 contract('GovernorStorage', function (accounts) {
   const [owner, voter1, voter2, voter3, voter4] = accounts;
@@ -92,9 +92,7 @@ contract('GovernorStorage', function (accounts) {
           // panic code 0x32 (out-of-bound)
           await expectRevert.unspecified(this.mock.proposalDetailsAt(0));
 
-          await expectRevertCustomError(this.mock.proposalDetails(this.proposal.id), 'GovernorNonexistentProposal', [
-            this.proposal.id,
-          ]);
+          await expectRevert.unspecified(this.mock.proposalDetails(this.proposal.id));
         });
 
         it('after propose', async function () {

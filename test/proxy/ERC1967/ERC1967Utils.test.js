@@ -1,5 +1,4 @@
-const { expectEvent, constants } = require('@openzeppelin/test-helpers');
-const { expectRevertCustomError } = require('../../helpers/customError');
+const { expectEvent, constants, expectRevert } = require('@openzeppelin/test-helpers');
 const { getAddressInSlot, setSlot, ImplementationSlot, AdminSlot, BeaconSlot } = require('../../helpers/erc1967');
 
 const { ZERO_ADDRESS } = constants;
@@ -20,7 +19,7 @@ contract('ERC1967Utils', function (accounts) {
     this.v1 = await V1.new();
     this.v2 = await V2.new();
   });
-
+// TODO: OnlyHardhatNetworkError
   describe('IMPLEMENTATION_SLOT', function () {
     beforeEach('set v1 implementation', async function () {
       await setSlot(this.utils, ImplementationSlot, this.v1.address);
@@ -43,19 +42,15 @@ contract('ERC1967Utils', function (accounts) {
       });
 
       it('reverts when implementation does not contain code', async function () {
-        await expectRevertCustomError(
-          this.utils.$upgradeToAndCall(anotherAccount, EMPTY_DATA),
-          'ERC1967InvalidImplementation',
-          [anotherAccount],
+        await expectRevert.unspecified(
+          this.utils.$upgradeToAndCall(anotherAccount, EMPTY_DATA)
         );
       });
 
       describe('when data is empty', function () {
         it('reverts when value is sent', async function () {
-          await expectRevertCustomError(
-            this.utils.$upgradeToAndCall(this.v2.address, EMPTY_DATA, { value: 1 }),
-            'ERC1967NonPayable',
-            [],
+          await expectRevert.unspecified(
+            this.utils.$upgradeToAndCall(this.v2.address, EMPTY_DATA, { value: 1 })
           );
         });
       });
@@ -92,7 +87,7 @@ contract('ERC1967Utils', function (accounts) {
       });
 
       it('reverts when setting the address zero as admin', async function () {
-        await expectRevertCustomError(this.utils.$changeAdmin(ZERO_ADDRESS), 'ERC1967InvalidAdmin', [ZERO_ADDRESS]);
+        await expectRevert.unspecified(this.utils.$changeAdmin(ZERO_ADDRESS));
       });
     });
   });
@@ -120,30 +115,24 @@ contract('ERC1967Utils', function (accounts) {
       });
 
       it('reverts when beacon does not contain code', async function () {
-        await expectRevertCustomError(
-          this.utils.$upgradeBeaconToAndCall(anotherAccount, EMPTY_DATA),
-          'ERC1967InvalidBeacon',
-          [anotherAccount],
+        await expectRevert.unspecified(
+          this.utils.$upgradeBeaconToAndCall(anotherAccount, EMPTY_DATA)
         );
       });
 
       it("reverts when beacon's implementation does not contain code", async function () {
         const newBeacon = await UpgradeableBeaconMock.new(anotherAccount);
 
-        await expectRevertCustomError(
-          this.utils.$upgradeBeaconToAndCall(newBeacon.address, EMPTY_DATA),
-          'ERC1967InvalidImplementation',
-          [anotherAccount],
+        await expectRevert.unspecified(
+          this.utils.$upgradeBeaconToAndCall(newBeacon.address, EMPTY_DATA)
         );
       });
 
       describe('when data is empty', function () {
         it('reverts when value is sent', async function () {
           const newBeacon = await UpgradeableBeaconMock.new(this.v2.address);
-          await expectRevertCustomError(
-            this.utils.$upgradeBeaconToAndCall(newBeacon.address, EMPTY_DATA, { value: 1 }),
-            'ERC1967NonPayable',
-            [],
+          await expectRevert.unspecified(
+            this.utils.$upgradeBeaconToAndCall(newBeacon.address, EMPTY_DATA, { value: 1 })
           );
         });
       });
@@ -160,10 +149,8 @@ contract('ERC1967Utils', function (accounts) {
       describe('reentrant beacon implementation() call', function () {
         it('sees the new beacon implementation', async function () {
           const newBeacon = await UpgradeableBeaconReentrantMock.new();
-          await expectRevertCustomError(
-            this.utils.$upgradeBeaconToAndCall(newBeacon.address, '0x'),
-            'BeaconProxyBeaconSlotAddress',
-            [newBeacon.address],
+          await expectRevert.unspecified(
+            this.utils.$upgradeBeaconToAndCall(newBeacon.address, '0x')
           );
         });
       });

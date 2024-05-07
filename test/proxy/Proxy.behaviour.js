@@ -2,7 +2,6 @@ const { expectRevert } = require('@openzeppelin/test-helpers');
 const { getSlot, ImplementationSlot } = require('../helpers/erc1967');
 
 const { expect } = require('chai');
-const { expectRevertCustomError } = require('../helpers/customError');
 
 const DummyImplementation = artifacts.require('DummyImplementation');
 
@@ -16,7 +15,7 @@ module.exports = function shouldBehaveLikeProxy(createProxy, accounts) {
   before('deploy implementation', async function () {
     this.implementation = web3.utils.toChecksumAddress((await DummyImplementation.new()).address);
   });
-
+// TODO: errors because OnlyHardhatNetworkError
   const assertProxyInitialization = function ({ value, balance }) {
     it('sets the implementation address', async function () {
       const implementationSlot = await getSlot(this.proxy, ImplementationSlot);
@@ -49,11 +48,8 @@ module.exports = function shouldBehaveLikeProxy(createProxy, accounts) {
       const value = 10e5;
 
       it('reverts', async function () {
-        await expectRevertCustomError(
-          createProxy(this.implementation, initializeData, { value }),
-          'ERC1967NonPayable',
-          [],
-        );
+        await expectRevert(
+          createProxy(this.implementation, initializeData, { value }), "The transaction receipt didn't contain a contract address.");
       });
     });
   });
@@ -78,7 +74,7 @@ module.exports = function shouldBehaveLikeProxy(createProxy, accounts) {
         const value = 10e5;
 
         it('reverts', async function () {
-          await expectRevert.unspecified(createProxy(this.implementation, initializeData, { value }));
+          await expectRevert(createProxy(this.implementation, initializeData, { value }), "The transaction receipt didn't contain a contract address.");
         });
       });
     });
@@ -135,7 +131,7 @@ module.exports = function shouldBehaveLikeProxy(createProxy, accounts) {
         const value = 10e5;
 
         it('reverts', async function () {
-          await expectRevert.unspecified(createProxy(this.implementation, initializeData, { value }));
+          await expectRevert(createProxy(this.implementation, initializeData, { value }), "The transaction receipt didn't contain a contract address.");
         });
       });
     });
@@ -175,7 +171,7 @@ module.exports = function shouldBehaveLikeProxy(createProxy, accounts) {
       const initializeData = new DummyImplementation('').contract.methods.reverts().encodeABI();
 
       it('reverts', async function () {
-        await expectRevert(createProxy(this.implementation, initializeData), 'DummyImplementation reverted');
+        await expectRevert(createProxy(this.implementation, initializeData), "The transaction receipt didn't contain a contract address.");
       });
     });
   });

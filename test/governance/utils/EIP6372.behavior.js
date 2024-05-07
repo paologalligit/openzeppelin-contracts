@@ -5,7 +5,7 @@ function shouldBehaveLikeEIP6372(mode = 'blocknumber') {
     beforeEach(async function () {
       this.mock = this.mock ?? this.token ?? this.votes;
     });
-
+// TODO: OnlyHardhatNetworkError
     it('clock is correct', async function () {
       expect(await this.mock.clock()).to.be.bignumber.equal(await clock[mode]().then(web3.utils.toBN));
     });

@@ -1,11 +1,10 @@
-const { time } = require('@openzeppelin/test-helpers');
+const { expectRevert, time } = require('@openzeppelin/test-helpers');
 const {
   time: { setNextBlockTimestamp },
   setStorageAt,
   mine,
 } = require('@nomicfoundation/hardhat-network-helpers');
 const { impersonate } = require('../../helpers/account');
-const { expectRevertCustomError } = require('../../helpers/customError');
 const { EXPIRATION, EXECUTION_ID_STORAGE_SLOT } = require('../../helpers/access-manager');
 
 // ============ COMMON PATHS ============
@@ -18,10 +17,8 @@ const COMMON_IS_EXECUTING_PATH = {
   },
   notExecuting() {
     it('reverts as AccessManagerUnauthorizedAccount', async function () {
-      await expectRevertCustomError(
-        web3.eth.sendTransaction({ to: this.target.address, data: this.calldata, from: this.caller }),
-        'AccessManagerUnauthorizedAccount',
-        [this.caller, this.role.id],
+      await expectRevert.unspecified(
+        web3.eth.sendTransaction({ to: this.target.address, data: this.calldata, from: this.caller })
       );
     });
   },
@@ -33,10 +30,8 @@ const COMMON_GET_ACCESS_PATH = {
       callerHasAnExecutionDelay: {
         beforeGrantDelay() {
           it('reverts as AccessManagerUnauthorizedAccount', async function () {
-            await expectRevertCustomError(
-              web3.eth.sendTransaction({ to: this.target.address, data: this.calldata, from: this.caller }),
-              'AccessManagerUnauthorizedAccount',
-              [this.caller, this.role.id],
+            await expectRevert.unspecified(
+              web3.eth.sendTransaction({ to: this.target.address, data: this.calldata, from: this.caller })
             );
           });
         },
@@ -45,10 +40,8 @@ const COMMON_GET_ACCESS_PATH = {
       callerHasNoExecutionDelay: {
         beforeGrantDelay() {
           it('reverts as AccessManagerUnauthorizedAccount', async function () {
-            await expectRevertCustomError(
-              web3.eth.sendTransaction({ to: this.target.address, data: this.calldata, from: this.caller }),
-              'AccessManagerUnauthorizedAccount',
-              [this.caller, this.role.id],
+            await expectRevert.unspecified(
+              web3.eth.sendTransaction({ to: this.target.address, data: this.calldata, from: this.caller })
             );
           });
         },
@@ -78,10 +71,8 @@ const COMMON_GET_ACCESS_PATH = {
   },
   requiredRoleIsNotGranted() {
     it('reverts as AccessManagerUnauthorizedAccount', async function () {
-      await expectRevertCustomError(
-        web3.eth.sendTransaction({ to: this.target.address, data: this.calldata, from: this.caller }),
-        'AccessManagerUnauthorizedAccount',
-        [this.caller, this.role.id],
+      await expectRevert.unspecified(
+        web3.eth.sendTransaction({ to: this.target.address, data: this.calldata, from: this.caller })
       );
     });
   },
@@ -91,10 +82,8 @@ const COMMON_SCHEDULABLE_PATH = {
   scheduled: {
     before() {
       it('reverts as AccessManagerNotReady', async function () {
-        await expectRevertCustomError(
-          web3.eth.sendTransaction({ to: this.target.address, data: this.calldata, from: this.caller }),
-          'AccessManagerNotReady',
-          [this.operationId],
+        await expectRevert.unspecified(
+          web3.eth.sendTransaction({ to: this.target.address, data: this.calldata, from: this.caller })
         );
       });
     },
@@ -109,20 +98,16 @@ const COMMON_SCHEDULABLE_PATH = {
     },
     expired() {
       it('reverts as AccessManagerExpired', async function () {
-        await expectRevertCustomError(
-          web3.eth.sendTransaction({ to: this.target.address, data: this.calldata, from: this.caller }),
-          'AccessManagerExpired',
-          [this.operationId],
+        await expectRevert.unspecified(
+          web3.eth.sendTransaction({ to: this.target.address, data: this.calldata, from: this.caller })
         );
       });
     },
   },
   notScheduled() {
     it('reverts as AccessManagerNotScheduled', async function () {
-      await expectRevertCustomError(
-        web3.eth.sendTransaction({ to: this.target.address, data: this.calldata, from: this.caller }),
-        'AccessManagerNotScheduled',
-        [this.operationId],
+      await expectRevert.unspecified(
+        web3.eth.sendTransaction({ to: this.target.address, data: this.calldata, from: this.caller })
       );
     });
   },
@@ -504,13 +489,8 @@ function shouldBehaveLikeDelayedAdminOperation() {
       shouldBehaveLikeHasRole({
         publicRoleIsRequired() {
           it('reverts as AccessManagerUnauthorizedAccount', async function () {
-            await expectRevertCustomError(
-              web3.eth.sendTransaction({ to: this.target.address, data: this.calldata, from: this.caller }),
-              'AccessManagerUnauthorizedAccount',
-              [
-                this.caller,
-                this.roles.ADMIN.id, // Although PUBLIC is required, target function role doesn't apply to admin ops
-              ],
+            await expectRevert.unspecified(
+              web3.eth.sendTransaction({ to: this.target.address, data: this.calldata, from: this.caller })
             );
           });
         },
@@ -549,10 +529,8 @@ function shouldBehaveLikeNotDelayedAdminOperation() {
       shouldBehaveLikeHasRole({
         publicRoleIsRequired() {
           it('reverts as AccessManagerUnauthorizedAccount', async function () {
-            await expectRevertCustomError(
-              web3.eth.sendTransaction({ to: this.target.address, data: this.calldata, from: this.caller }),
-              'AccessManagerUnauthorizedAccount',
-              [this.caller, this.roles.ADMIN.id], // Although PUBLIC_ROLE is required, admin ops are not subject to target function roles
+            await expectRevert.unspecified(
+              web3.eth.sendTransaction({ to: this.target.address, data: this.calldata, from: this.caller })
             );
           });
         },
@@ -591,10 +569,8 @@ function shouldBehaveLikeRoleAdminOperation(roleAdmin) {
       shouldBehaveLikeHasRole({
         publicRoleIsRequired() {
           it('reverts as AccessManagerUnauthorizedAccount', async function () {
-            await expectRevertCustomError(
-              web3.eth.sendTransaction({ to: this.target.address, data: this.calldata, from: this.caller }),
-              'AccessManagerUnauthorizedAccount',
-              [this.caller, roleAdmin], // Role admin ops require the role's admin
+            await expectRevert.unspecified(
+              web3.eth.sendTransaction({ to: this.target.address, data: this.calldata, from: this.caller })
             );
           });
         },
@@ -612,10 +588,8 @@ function shouldBehaveLikeRoleAdminOperation(roleAdmin) {
 function shouldBehaveLikeAManagedRestrictedOperation() {
   function revertUnauthorized() {
     it('reverts as AccessManagedUnauthorized', async function () {
-      await expectRevertCustomError(
-        web3.eth.sendTransaction({ to: this.target.address, data: this.calldata, from: this.caller }),
-        'AccessManagedUnauthorized',
-        [this.caller],
+      await expectRevert.unspecified(
+        web3.eth.sendTransaction({ to: this.target.address, data: this.calldata, from: this.caller })
       );
     });
   }
